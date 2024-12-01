@@ -1,8 +1,8 @@
 {
-	"source" : "C:\\Users\\mark\\OneDrive\\Pictures\\Camera Roll\\",
-	"dest" : "C:\\Users\\mark\\OneDrive\\Pictures\\Camera Roll Renamed\\",
-	"sourcetest" : "C:\\Users\\mark\\OneDrive\\Pics\\",
-	"desttest" : "C:\\Users\\mark\\OneDrive\\Pics Renamed\\",
+	"source" : "C:\\OneDrive\\Pictures\\Camera Roll\\",
+	"dest" : "C:\\OneDrive\\Pictures\\Camera Roll Renamed\\",
+	"sourcetest" : "C:\\OneDrive\\Pics\\",
+	"desttest" : "C:\\OneDrive\\Pics Renamed\\",
 	"log" : "log.xlsx",
 	"timezone" : "America/Chicago"
 }
