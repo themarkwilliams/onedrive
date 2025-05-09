@@ -1,6 +1,7 @@
 {
-	"source" : "C:\\OneDrive\\Pictures\\Camera Roll\\",
-	"dest" : "C:\\OneDrive\\Pictures\\Camera Roll Renamed\\",
+	"source" : "C:\\OneDrive\\Media\\Camera Uploads Raw\\",
+	"dest" : "C:\\OneDrive\\Camera Uploads\\",
+	"second-copy" : "C:\\OneDrive\\_Inbox\\Camera Uploads Renamed Temp\\",
 	"sourcetest" : "C:\\OneDrive\\Pics\\",
 	"desttest" : "C:\\OneDrive\\Pics Renamed\\",
 	"log" : "log.xlsx",

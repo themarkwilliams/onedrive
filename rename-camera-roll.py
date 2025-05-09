@@ -37,6 +37,34 @@ def get_date_filmed(path):
 	create_time_local = create_time.astimezone(timezone)
 	return (create_time_local)
 
+
+def get_screenshot_date(file_path):
+	# https://x.com/i/grok?conversation=1920649389707542832
+    """
+    Extract date and time from a screenshot filename and return a datetime object.
+    
+    Args:
+        file_path (str): Path to the screenshot file (e.g., 'Screenshot_20250108-143022.png')
+        
+    Returns:
+        datetime: Datetime object representing the date and time in the filename
+        
+    Raises:
+        ValueError: If the filename format is invalid
+    """
+    try:
+        # Extract filename from path
+        filename = os.path.basename(file_path)
+
+        # Remove 'Screenshot_' prefix and '.png' suffix
+        date_str = filename.replace('Screenshot_', '').replace('.png', '')
+
+        # Parse the date string (YYYYMMDD-HHMMSS) into a datetime object
+        return datetime.strptime(date_str, '%Y%m%d-%H%M%S')
+    except ValueError:
+        raise ValueError(
+            "Invalid filename format. Expected 'Screenshot_YYYYMMDD-HHMMSS.png'")
+
 def get_date_taken(path,filename,ext):
 	#EXIF Reference https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
 	try:
@@ -77,9 +105,10 @@ with open(config) as f:
 	f.close()
 sourcepath = config["source"]
 destpath = config["dest"]
+destsecondpath = config["second-copy"]
 logpath = scriptpath + config["log"]
-#print("Source: ", sourcepath)
-#print("Dest: ", destpath)
+print("Source: ", sourcepath)
+print("Dest: ", destpath)
 timezone = pytz.timezone(config["timezone"])
 
 df = pd.DataFrame(columns=['Date', 'Sequence', 'Source', 'Old', 'Dest', 'New'])
@@ -119,9 +148,13 @@ for root, dirs, files in os.walk(sourcepath):
 			fdate = get_date_taken(p,f,ext)
 		if ext in movlist:
 			ext = ".mp4"
+			
 			fdate = get_date_filmed(p)
-		#print (fdate, type(fdate))
-		
+		if fdate ==None and f.find("Screenshot") >=0:
+			fdate = get_screenshot_date(p)
+								
+		#print(fdate, type(fdate))
+
 		if fdate:
 			# Rename the file
 			#YYYY-MM-DD HH.MM.SS
@@ -151,6 +184,7 @@ for root, dirs, files in os.walk(sourcepath):
 				if (runmode == "final"):
 						try:
 							# Move the file
+							shutil.copy(sourcepath+f, destsecondpath+newname) # This puts a second copy for full preservation
 							results = shutil.move(sourcepath+f, destpath+newname)
 							new_row = {'Date': datetime.now(),
                                                             'Sequence': i,
@@ -192,4 +226,4 @@ if (runmode == "final"):
 		ws.append(r)
 	wb.save(logpath)
 
-input("Press ENTER to continue")
+#input("Press ENTER to continue")
