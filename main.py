@@ -26,7 +26,27 @@ init()
 # X	Handle duplicate second pictures
 # TODO	Possibly rename the project
 
-global timezone
+# Get Script Parameters
+scriptpath = os.path.dirname(__file__) + "\\"
+print(scriptpath)
+
+# Get config
+# scriptpath + 'config.json'
+config = os.path.join(scriptpath, '.pref', 'config.json')
+
+with open(config) as f:
+    config = json.load(f)
+    f.close()
+
+sourcepath = config["source"]
+destpath = config["dest"]
+destsecondpath = config["second-copy"]
+logpath = scriptpath + config["log"]
+
+print("Source: ", sourcepath)
+print("Dest: ", destpath)
+
+timezone = pytz.timezone(config["timezone"])
 
 def get_date_filmed(path):
 	# uses ffprobe command to extract all possible metadata from the media file
@@ -99,27 +119,6 @@ def get_date_taken(path, filename, ext):
 
 
 def main():
-
-    # Get Script Parameters
-    scriptpath = os.path.dirname(__file__) + "\\"
-    print(scriptpath)
-
-    # Get config
-    config = os.path.join(scriptpath, '.pref', 'config.json')  # scriptpath + 'config.json'
-    
-    with open(config) as f:
-        config = json.load(f)
-        f.close()
-    
-    sourcepath = config["source"]
-    destpath = config["dest"]
-    destsecondpath = config["second-copy"]
-    logpath = scriptpath + config["log"]
-
-    print("Source: ", sourcepath)
-    print("Dest: ", destpath)
-    timezone = pytz.timezone(config["timezone"])
-
     df = pd.DataFrame(columns=['Date', 'Sequence', 'Source', 'Old', 'Dest', 'New'])
 
     # Run in Proof mode unless "final" is provided as an argument
