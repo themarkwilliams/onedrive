@@ -25,6 +25,7 @@ init()
 # X Add error handling to jpeg ext
 # X	Handle duplicate second pictures
 # TODO	Possibly rename the project
+# TODO     Handle DNG files - PXL_20250908_231624190.RAW-02.ORIGINAL.dng
 
 # Get Script Parameters
 scriptpath = os.path.dirname(__file__) + "\\"
@@ -33,6 +34,7 @@ print(scriptpath)
 # Get config
 # scriptpath + 'config.json'
 config = os.path.join(scriptpath, '.pref', 'config.json')
+#config = os.path.join(scriptpath, '.pref', 'config-u.json') #####~####
 
 with open(config) as f:
     config = json.load(f)
@@ -40,7 +42,7 @@ with open(config) as f:
 
 sourcepath = config["source"]
 destpath = config["dest"]
-destsecondpath = config["second-copy"]
+destsecondpath = config["second-copy"] #########
 logpath = scriptpath + config["log"]
 
 print("Source: ", sourcepath)
@@ -86,6 +88,43 @@ def get_screenshot_date(file_path):
     except ValueError:
         raise ValueError(
             "Invalid filename format. Expected 'Screenshot_YYYYMMDD-HHMMSS.png'")
+
+
+def get_pxl_date(file_path):
+    """
+    Extract date and time from a Google Pixel camera filename and return a datetime object.
+
+    Args:
+        file_path (str): Path to the PXL file (e.g., 'PXL_20251009_235442470.RAW-02.ORIGINAL.dng')
+
+    Returns:
+        datetime: Datetime object representing the date and time in the filename
+
+    Raises:
+        ValueError: If the filename format is invalid
+    """
+    try:
+        # Extract filename from path
+        filename = os.path.basename(file_path)
+
+        # Check if it starts with PXL_
+        if not filename.startswith('PXL_'):
+            raise ValueError("Not a PXL format file")
+
+        # Extract the datetime portion: PXL_YYYYMMDD_HHMMSSmmm
+        # Split by underscore and take the date and time parts
+        parts = filename.split('_')
+        if len(parts) < 3:
+            raise ValueError("Invalid PXL format")
+
+        date_part = parts[1]  # YYYYMMDD
+        time_part = parts[2].split('.')[0]  # HHMMSSmmm (before any dots)
+
+        # Parse: YYYYMMDD and HHMMSS (ignoring milliseconds)
+        datetime_str = date_part + time_part[:6]  # YYYYMMDDHHMMSS
+        return datetime.strptime(datetime_str, '%Y%m%d%H%M%S')
+    except (ValueError, IndexError):
+        raise ValueError("Invalid PXL filename format. Expected 'PXL_YYYYMMDD_HHMMSSmmm...'")
 
 
 def get_date_taken(path, filename, ext):
@@ -151,7 +190,7 @@ def main():
             # print(get_date_taken(p))
             # print(ext,type(ext))
 
-            piclist = ['.png', '.jpg', '.jpeg']
+            piclist = ['.png', '.jpg', '.jpeg', '.dng']
             movlist = ['.mp4']
 
             if ext in piclist:
@@ -162,6 +201,12 @@ def main():
                 fdate = get_date_filmed(p)
             if fdate == None and f.find("Screenshot") >= 0:
                 fdate = get_screenshot_date(p)
+            # Handle PXL format (Google Pixel camera files)
+            if fdate == None and f.startswith("PXL_"):
+                try:
+                    fdate = get_pxl_date(p)
+                except ValueError:
+                    pass  # Will be handled by "Date not determinable" message
 
             # print(fdate, type(fdate))
 
@@ -195,8 +240,9 @@ def main():
                         try:
                                 # Move the file
                                 # This puts a second copy for full preservation
-                                shutil.copy(sourcepath+f, destsecondpath+newname)
-                                results = shutil.move(sourcepath+f, destpath+newname)
+                                #shutil.copy(sourcepath+f, destsecondpath+newname)
+                                print(os.path.join(sourcepath+f)," -> ", os.path.join(destpath+newname))
+                                results = shutil.move(os.path.join(sourcepath+f), os.path.join(destpath+newname))
                                 new_row = {'Date': datetime.now(),
                                                                 'Sequence': i,
                                                                 'Source': sourcepath,
