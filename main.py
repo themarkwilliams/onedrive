@@ -139,9 +139,8 @@ def get_date_taken(path, filename, ext):
 			# Metadata isn't complete, but the filename is right so use that.
 			if ext == ".jpeg":
 				rawfile = os.path.splitext(filename)[0]
-				rawfile = rawfile[0:len(rawfile)-6]
 				# print(rawfile)
-				datetry = datetime.strptime(rawfile, "%Y-%m-%dT%H_%M_%S")
+				datetry = datetime.strptime(rawfile[:19], "%Y-%m-%dT%H_%M_%S")
 				# print(datetry,type(datetry))
 				create_time = datetry
 			else:
