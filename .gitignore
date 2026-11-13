@@ -1,0 +1,21 @@
+/NOTES.txt
+/extract-metadata.py
+/log.xlsx
+/assets
+/.venv
+/.cmd/*.log
+/.pref/config-u.json
+
+# Baseline (C:\OneDrive\Code\standards.md section 7)
+__pycache__/
+*.pyc
+node_modules/
+.pref/
+.env
+.env.*
+logs/
+*.log
+*-xps.*
+*-lappy.*
+.vscode/
+!.env.example
