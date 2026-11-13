@@ -143,10 +143,10 @@ def get_date_taken(path, filename, ext):
 	# EXIF Reference https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
 	try:
 		create_time = Image.open(path)._getexif()[36867]
-	except:
+	except Exception:  # deliberate: no DateTimeOriginal, try DateTimeDigitized
 		try:
 			create_time = Image.open(path)._getexif()[36868]
-		except:
+		except Exception:  # deliberate: no EXIF date, fall back to the file name
 			# This is for jpegs created by the Plant Checking App
 			# Metadata isn't complete, but the filename is right so use that.
 			if ext == ".jpeg":
@@ -163,7 +163,7 @@ def get_date_taken(path, filename, ext):
 	else:
 		try:
 			dt = datetime.strptime(create_time, "%Y:%m:%d %H:%M:%S")
-		except:
+		except Exception:  # deliberate: unparseable date; the caller logs "Date not determinable"
 			dt = None
 	return dt
 
@@ -218,7 +218,7 @@ def main():
             if fdate == None and f.startswith("PXL_"):
                 try:
                     fdate = get_pxl_date(p)
-                except ValueError:
+                except ValueError:  # deliberate: handled by the "Date not determinable" message
                     pass  # Will be handled by "Date not determinable" message
 
             # print(fdate, type(fdate))
@@ -263,7 +263,7 @@ def main():
                                                                 'Dest': destpath,
                                                                 'New': newname}
                                 df.loc[len(df)] = new_row
-                        except:
+                        except Exception:
                             say(logging.INFO, "\tFile can't be renamed and moved:", f)
                 # print("\tSource + F:", sourcepath+f)
                 # print("\tDest + newname: ", destpath+newname)
@@ -283,7 +283,7 @@ def main():
                     'New': newname}
                             df.loc[len(df)] = new_row
                             # print("\ttrying to move the correctly named file")
-                        except:
+                        except Exception:
                             say(logging.INFO, "\tFile can't be renamed and moved:", f)
             else:
                 say(logging.INFO, str(i) + "\t" + Back.RED + "Date not determinable: ",
