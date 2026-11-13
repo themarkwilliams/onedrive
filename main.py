@@ -14,6 +14,18 @@ from colorama import Fore, Back, Style
 import pandas as pd
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import load_workbook
+import logging
+import re as _re
+from mark_modules import mark_log
+
+mark_log.setup_logging(project='onedrive-photo-namer')  # JSON lines; mark-modules' job runner writes them (homelab#254)
+_ANSI = _re.compile(r'\x1b\[[0-9;]*m')
+
+
+def say(level, *args, sep=' ', **_):
+    """print()-style call into the log, colour codes removed (homelab#254)."""
+    logging.getLogger('onedrive-photo-namer').log(level, _ANSI.sub('', sep.join(str(a) for a in args)).strip())
+
 init()
 
 # X	Add argment check for final
@@ -29,7 +41,7 @@ init()
 
 # Get Script Parameters
 scriptpath = os.path.dirname(__file__) + "\\"
-print(scriptpath)
+say(logging.DEBUG, scriptpath)
 
 # Get config
 # scriptpath + 'config.json'
@@ -45,8 +57,8 @@ destpath = config["dest"]
 destsecondpath = config["second-copy"] #########
 logpath = scriptpath + config["log"]
 
-print("Source: ", sourcepath)
-print("Dest: ", destpath)
+say(logging.DEBUG, "Source: ", sourcepath)
+say(logging.DEBUG, "Dest: ", destpath)
 
 timezone = pytz.timezone(config["timezone"])
 
@@ -173,14 +185,16 @@ def main():
 
     for root, dirs, files in os.walk(sourcepath):
         if (runmode == "final"):
-            print(Fore.WHITE + Back.MAGENTA +
+            say(logging.DEBUG, Fore.WHITE + Back.MAGENTA +
                 "***************** FINAL MODE *****************" + Back.BLACK + Fore.WHITE)
         else:
-            print(Fore.BLUE + "***************** PROOF MODE *****************" +
+            say(logging.DEBUG, Fore.BLUE + "***************** PROOF MODE *****************" +
                 Back.BLACK + Fore.WHITE)
 
         i = 0
         for f in files:
+            if f.lower() in ('desktop.ini', 'thumbs.db', '.ds_store'):  # system files (onedrive#1)
+                continue
             i = i+1
             fdate = None
             p = os.path.join(root, f)
@@ -224,15 +238,15 @@ def main():
                     if (runmode == "final"):
                         if os.path.exists(sourcepath+f):
                             if not os.path.exists(destpath):
-                                print("\tDestination path doesn't exist.")
+                                say(logging.INFO, "\tDestination path doesn't exist.")
                                 os.mkdir(destpath)
-                                print("\tPath created: ", destpath)
+                                say(logging.INFO, "\tPath created: ", destpath)
 
                     if count > 1:
-                        print("\t" + Fore.RED + Back.YELLOW +
+                        say(logging.ERROR, "\t" + Fore.RED + Back.YELLOW +
                             "Filename already used." + Fore.WHITE + Back.BLACK)
 
-                    print(str(i) + "\t" + Fore.RED + f + Fore.YELLOW + "  ->  " +
+                    say(logging.ERROR, str(i) + "\t" + Fore.RED + f + Fore.YELLOW + "  ->  " +
                                         Fore.GREEN + newname + Back.BLACK + Fore.WHITE)
 
                     if (runmode == "final"):
@@ -240,7 +254,7 @@ def main():
                                 # Move the file
                                 # This puts a second copy for full preservation
                                 #shutil.copy(sourcepath+f, destsecondpath+newname)
-                                print(os.path.join(sourcepath+f)," -> ", os.path.join(destpath+newname))
+                                say(logging.DEBUG, os.path.join(sourcepath+f)," -> ", os.path.join(destpath+newname))
                                 results = shutil.move(os.path.join(sourcepath+f), os.path.join(destpath+newname))
                                 new_row = {'Date': datetime.now(),
                                                                 'Sequence': i,
@@ -250,12 +264,12 @@ def main():
                                                                 'New': newname}
                                 df.loc[len(df)] = new_row
                         except:
-                            print("\tFile can't be renamed and moved:", f)
+                            say(logging.INFO, "\tFile can't be renamed and moved:", f)
                 # print("\tSource + F:", sourcepath+f)
                 # print("\tDest + newname: ", destpath+newname)
                             continue
                 else:
-                    print(str(i) + "\t" + Back.BLUE + Fore.WHITE + f + \
+                    say(logging.INFO, str(i) + "\t" + Back.BLUE + Fore.WHITE + f + \
                         " correctly named." + Back.BLACK + Fore.WHITE)
                     if (runmode == "final"):
                         try:
@@ -270,9 +284,9 @@ def main():
                             df.loc[len(df)] = new_row
                             # print("\ttrying to move the correctly named file")
                         except:
-                            print("\tFile can't be renamed and moved:", f)
+                            say(logging.INFO, "\tFile can't be renamed and moved:", f)
             else:
-                print(str(i) + "\t" + Back.RED + "Date not determinable: ",
+                say(logging.INFO, str(i) + "\t" + Back.RED + "Date not determinable: ",
                     f, Fore.WHITE + Back.BLACK)
 
     # Save the results to Excel if final mode

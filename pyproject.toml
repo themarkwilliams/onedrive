@@ -7,9 +7,13 @@ requires-python = ">=3.13"
 dependencies = [
     "colorama>=0.4.6",
     "ffmpeg-python>=0.2.0",
+    "mark-modules",
     "numpy>=2.2.6",
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
     "pillow>=11.2.1",
     "pytz>=2025.2",
 ]
+
+[tool.uv.sources]
+mark-modules = { path = "../mark-modules", editable = true }
