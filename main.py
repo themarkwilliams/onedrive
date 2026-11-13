@@ -243,10 +243,10 @@ def main():
                                 say(logging.INFO, "\tPath created: ", destpath)
 
                     if count > 1:
-                        say(logging.ERROR, "\t" + Fore.RED + Back.YELLOW +
+                        say(logging.WARNING, "\t" + Fore.RED + Back.YELLOW +
                             "Filename already used." + Fore.WHITE + Back.BLACK)
 
-                    say(logging.ERROR, str(i) + "\t" + Fore.RED + f + Fore.YELLOW + "  ->  " +
+                    say(logging.INFO, str(i) + "\t" + Fore.RED + f + Fore.YELLOW + "  ->  " +
                                         Fore.GREEN + newname + Back.BLACK + Fore.WHITE)
 
                     if (runmode == "final"):
