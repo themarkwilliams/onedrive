@@ -22,6 +22,8 @@ secret goes in it, notes included.
 - The folder is `onedrive-photo-namer`, the repo `onedrive` (homelab#28).
 - `desktop.ini` is skipped; a file whose date can't be read (e.g. `IMG_20260906_130656.jpg`) stays in the source
   folder.
+- A video with no `creation_time` tag (re-encoded, e.g. `2026_11_19_16_27_34_0.mp4`) is dated from a
+  `YYYY_MM_DD_HH_MM_SS[_n]` file name, else it stays in the source folder; before #4 one such file crashed every run.
 - `.gitignore` ignored itself until 2026-11-13, and the README was tracked as `readme.md`; both fixed then.
 
 ## Issues

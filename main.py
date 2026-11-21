@@ -105,6 +105,21 @@ def get_screenshot_date(file_path):
             "Invalid filename format. Expected 'Screenshot_YYYYMMDD-HHMMSS.png'")
 
 
+_UNDERSCORE_DATE = _re.compile(r'^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})(?:_\d+)?$')
+
+
+def get_underscore_date(filename):
+    """Date from a 'YYYY_MM_DD_HH_MM_SS[_n]' file name (re-encoded videos with no
+    creation_time tag, e.g. '2026_11_19_16_27_34_0.mp4'; onedrive#4). None if it doesn't match."""
+    m = _UNDERSCORE_DATE.match(os.path.splitext(filename)[0])
+    if not m:
+        return None
+    try:
+        return datetime(*map(int, m.groups()))
+    except ValueError:  # deliberate: an impossible date is "Date not determinable"
+        return None
+
+
 def get_pxl_date(file_path):
     """
     Extract date and time from a Google Pixel camera filename and return a datetime object.
@@ -215,6 +230,8 @@ def main():
                 ext = ".mp4"
 
                 fdate = get_date_filmed(p)
+                if fdate is None:
+                    fdate = get_underscore_date(f)
             if fdate == None and f.find("Screenshot") >= 0:
                 fdate = get_screenshot_date(p)
             # Handle PXL format (Google Pixel camera files)
