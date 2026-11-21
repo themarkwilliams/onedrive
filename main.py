@@ -65,9 +65,12 @@ timezone = pytz.timezone(config["timezone"])
 def get_date_filmed(path):
 	# uses ffprobe command to extract all possible metadata from the media file
 	# Other data is returned with this, I'm interested in ['tags']['creation_time']
-	metadata = ffmpeg.probe(path)["streams"][1]
-	# this gets the time of the metadata and when the image/video was captured
-	ct = metadata['tags']['creation_time']
+	probe = ffmpeg.probe(path)
+	# the tag can be on any stream or on the container; re-encoded videos may have none (onedrive#4)
+	tagsets = [s.get('tags', {}) for s in probe.get('streams', [])] + [probe.get('format', {}).get('tags', {})]
+	ct = next((t['creation_time'] for t in tagsets if 'creation_time' in t), None)
+	if ct is None:
+		return None  # no date: the file stays in the source folder
 	create_time = dateutil.parser.isoparse(ct)
 	# Documentation on astimezone - https://pypi.org/project/pytz/
 	create_time_local = create_time.astimezone(timezone)
